@@ -1,0 +1,477 @@
+/* ============================================================
+   ST-Phone-UI — SillyTavern 手机聊天UI扩展样式
+   ============================================================ */
+
+/* --- 手机浮窗按钮 --- */
+#st-phone-floating-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  font-size: 22px;
+  display: none;  /* 默认隐藏，有消息时显示 */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9998;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+#st-phone-floating-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+}
+#st-phone-floating-btn .badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* --- 手机主容器 --- */
+#st-phone-container {
+  position: fixed;
+  bottom: 140px;
+  right: 30px;
+  z-index: 9999;
+  display: none;
+  animation: st-phone-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#st-phone-container.show {
+  display: block;
+}
+@keyframes st-phone-slide-up {
+  from { opacity: 0; transform: translateY(30px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- 手机外壳 --- */
+.st-phone-frame {
+  width: 340px;
+  height: 620px;
+  background: #0d0d0d;
+  border-radius: 36px;
+  padding: 10px;
+  box-shadow:
+    0 0 0 2px #1a1a1a,
+    0 0 0 4px #0d0d0d,
+    0 20px 60px rgba(0,0,0,0.5);
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* --- 屏幕区域 --- */
+.st-phone-screen {
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5;
+  border-radius: 28px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* --- 刘海 --- */
+.st-phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 26px;
+  background: #0d0d0d;
+  border-radius: 0 0 18px 18px;
+  z-index: 10;
+}
+
+/* --- 状态栏 --- */
+.st-phone-statusbar {
+  height: 36px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 4px 28px 4px 28px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.st-phone-statusbar .time {
+  width: 50px;
+  text-align: center;
+}
+.st-phone-statusbar .icons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 10px;
+}
+
+/* --- 内容区 --- */
+.st-phone-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 14px;
+  scroll-behavior: smooth;
+}
+.st-phone-content::-webkit-scrollbar { width: 3px; }
+.st-phone-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+/* --- 底部导航 --- */
+.st-phone-tabbar {
+  height: 50px;
+  background: #f5f5f5;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.st-phone-tab {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.2s;
+  user-select: none;
+}
+.st-phone-tab .tab-icon {
+  font-size: 18px;
+  display: block;
+  margin-bottom: 1px;
+}
+.st-phone-tab.active {
+  color: #1a1a2e;
+}
+
+/* --- 关闭按钮 --- */
+.st-phone-close {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  border: none;
+  transition: background 0.2s;
+}
+.st-phone-close:hover { background: rgba(0,0,0,0.8); }
+
+/* ============================================================
+   聊天界面 (WeChat 风格)
+   ============================================================ */
+
+.st-chat-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.st-chat-bubble-wrap.sent {
+  align-items: flex-end;
+}
+.st-chat-bubble-wrap.received {
+  align-items: flex-start;
+}
+
+.st-chat-bubble {
+  max-width: 80%;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+  position: relative;
+  animation: st-msg-in 0.25s ease-out;
+}
+@keyframes st-msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.st-chat-bubble.sent {
+  background: #95ec69;
+  color: #000;
+  border-bottom-right-radius: 4px;
+}
+.st-chat-bubble.received {
+  background: #fff;
+  color: #1a1a1a;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.st-chat-sender {
+  font-size: 10px;
+  color: #999;
+  margin-bottom: 1px;
+  padding: 0 4px;
+}
+.st-chat-time {
+  font-size: 9px;
+  color: #b0b0b0;
+  margin-top: 2px;
+  padding: 0 4px;
+  text-align: right;
+}
+
+/* 群聊消息 */
+.st-chat-bubble.group {
+  background: #fff;
+  border-left: 3px solid #4a90d9;
+  border-radius: 6px 16px 16px 6px;
+}
+
+/* 特殊消息 */
+.st-chat-bubble.sticker {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 4px !important;
+  font-size: 40px;
+  text-align: center;
+}
+.st-chat-bubble.transfer {
+  background: #fff9e6 !important;
+  border: 1px solid #f5a623;
+  text-align: center;
+  color: #f5a623;
+  font-weight: 600;
+  font-size: 14px;
+}
+.st-chat-bubble.voice {
+  background: #fff !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px !important;
+}
+.st-chat-bubble.voice::before {
+  content: "🔊";
+  font-size: 16px;
+}
+.st-chat-bubble.music {
+  background: linear-gradient(135deg, #e8f5e9, #fff);
+  border: 1px solid #4caf50;
+  border-radius: 10px !important;
+}
+.st-chat-bubble.image-msg {
+  background: #e3f2fd !important;
+  font-style: italic;
+  color: #1976d2;
+}
+
+/* ============================================================
+   红书界面
+   ============================================================ */
+
+.st-rednote-card {
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  animation: st-msg-in 0.3s ease-out;
+}
+.st-rednote-card .rn-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px 0;
+  gap: 8px;
+}
+.st-rednote-card .rn-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.st-rednote-card .rn-author {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+.st-rednote-card .rn-time-rn {
+  font-size: 10px;
+  color: #999;
+}
+.st-rednote-card .rn-title1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  padding: 8px 12px 0;
+  line-height: 1.3;
+}
+.st-rednote-card .rn-title2 {
+  font-size: 12px;
+  color: #666;
+  padding: 2px 12px 0;
+}
+.st-rednote-card .rn-body {
+  font-size: 13px;
+  color: #333;
+  padding: 8px 12px;
+  line-height: 1.6;
+}
+.st-rednote-card .rn-stats {
+  display: flex;
+  gap: 16px;
+  padding: 0 12px 10px;
+  font-size: 11px;
+  color: #999;
+}
+.st-rednote-card .rn-stats span::before {
+  margin-right: 2px;
+}
+.st-rednote-card .rn-comments {
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 12px;
+}
+.st-rednote-card .rn-comment {
+  font-size: 11px;
+  padding: 4px 0;
+  color: #555;
+  line-height: 1.5;
+}
+.st-rednote-card .rn-comment .rn-c-author {
+  font-weight: 600;
+  color: #333;
+  font-size: 11px;
+}
+.st-rednote-card .rn-comment .rn-c-likes {
+  float: right;
+  font-size: 10px;
+  color: #bbb;
+}
+
+/* ============================================================
+   联系人界面
+   ============================================================ */
+
+.st-contact-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.st-contact-item:hover { background: #f9f9f9; }
+.st-contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  margin-right: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #fff;
+  font-weight: 700;
+}
+.st-contact-info {
+  flex: 1;
+  min-width: 0;
+}
+.st-contact-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.st-contact-last {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   空状态
+   ============================================================ */
+
+.st-phone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #ccc;
+  font-size: 13px;
+  gap: 8px;
+}
+.st-phone-empty .empty-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   响应式适配
+   ============================================================ */
+
+@media (max-width: 480px) {
+  #st-phone-container {
+    right: 10px;
+    bottom: 100px;
+  }
+  .st-phone-frame {
+    width: 300px;
+    height: 520px;
+  }
+}
+
+/* --- 夜间模式适配 (SillyTavern dark mode) --- */
+body.dark .st-phone-screen,
+body.dark .st-phone-statusbar,
+body.dark .st-phone-tabbar {
+  background: #1a1a1a;
+}
+body.dark .st-phone-statusbar { color: #e0e0e0; }
+body.dark .st-phone-tabbar { border-top-color: #2a2a2a; }
+body.dark .st-phone-tab { color: #666; }
+body.dark .st-phone-tab.active { color: #e0e0e0; }
+body.dark .st-chat-bubble.received { background: #2a2a2a; color: #e0e0e0; }
+body.dark .st-chat-sender { color: #777; }
+body.dark .st-rednote-card { background: #2a2a2a; }
+body.dark .st-rednote-card .rn-title1 { color: #e0e0e0; }
+body.dark .st-rednote-card .rn-body { color: #ccc; }
+body.dark .st-rednote-card .rn-comments { border-top-color: #333; }
+body.dark .st-contact-item { border-bottom-color: #2a2a2a; }
+body.dark .st-contact-name { color: #e0e0e0; }
