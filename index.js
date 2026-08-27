@@ -611,15 +611,22 @@
     console.log("[ST-Phone-UI] 手机聊天UI扩展已就绪");
   }
 
-  // 等待 DOM 就绪后初始化
-  if (document.readyState === "loading") {
+  // 注册扩展
+const extension = {
+    name: "ST-Phone-UI",
+    init: init,
+};
+if (typeof registerExtension === "function") {
+    registerExtension(extension);
+}
+
+if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
-      // 再等一小会儿，确保 ST 的聊天界面已渲染
-      setTimeout(init, 2000);
+        setTimeout(init, 2000);
     });
-  } else {
+} else {
     setTimeout(init, 2000);
-  }
+}
 
   // 也监听 ST 的特定事件（如果可用）
   try {
