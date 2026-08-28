@@ -50,6 +50,8 @@
   justify-content: center;
   padding: 0 5px;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  pointer-events: none;  /* 关键：让事件穿透到按钮主体 */
+  -webkit-pointer-events: none;
 }
 
 /* --- 手机主容器 --- */
