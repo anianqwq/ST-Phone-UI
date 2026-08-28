@@ -378,7 +378,12 @@
     });
 
     el.innerHTML = html;
-    el.scrollTop = el.scrollHeight;
+    // 等 DOM 完成布局后再滚动，否则 scrollHeight 是旧值
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.scrollTo({ top: el.scrollHeight, behavior: "instant" });
+      });
+    });
   }
 
   function renderMsgContent(m) {
@@ -447,7 +452,11 @@
     });
 
     el.innerHTML = html;
-    el.scrollTop = el.scrollHeight;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.scrollTo({ top: el.scrollHeight, behavior: "instant" });
+      });
+    });
   }
 
   function renderContacts() {
