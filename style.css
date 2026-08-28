@@ -13,15 +13,17 @@
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: #fff;
   font-size: 22px;
-  display: none;  /* 默认隐藏，有消息时显示 */
+  display: flex;  /* 默认显示 */
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 9998;
+  z-index: 99999;  /* 提高到最高层级 */
   box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   border: 1.5px solid rgba(255,255,255,0.15);
   transition: transform 0.2s, box-shadow 0.2s;
   user-select: none;
+  /* 增加呼吸动画 */
+  animation: st-phone-pulse 2s ease-in-out infinite;
 }
 #st-phone-floating-btn:hover {
   transform: scale(1.08);
@@ -455,6 +457,11 @@
     width: 300px;
     height: 520px;
   }
+}
+
+@keyframes st-phone-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 0 0 rgba(26,26,46,0.5); }
+  50% { box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 20px 5px rgba(26,26,46,0.2); }
 }
 
 /* --- 夜间模式适配 (SillyTavern dark mode) --- */
