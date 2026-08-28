@@ -52,8 +52,8 @@
       dragMoved = false;
       el.classList.add("dragging");
       el.style.transition = "none";
-      el.style.right = "auto";
-      el.style.bottom = "auto";
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
       e.preventDefault();
     }
 
@@ -70,8 +70,8 @@
       // 限制不超出屏幕
       const newLeft = Math.max(0, Math.min(startLeft + dx, window.innerWidth - el.offsetWidth));
       const newTop = Math.max(0, Math.min(startTop + dy, window.innerHeight - el.offsetHeight));
-      el.style.left = newLeft + "px";
-      el.style.top = newTop + "px";
+      el.style.setProperty('left', newLeft + "px", 'important');
+      el.style.setProperty('top', newTop + "px", 'important');
     }
 
     function onEnd() {
@@ -95,10 +95,10 @@
         const saved = localStorage.getItem(storageKey);
         if (saved) {
           const pos = JSON.parse(saved);
-          el.style.left = pos.left + "px";
-          el.style.top = pos.top + "px";
-          el.style.right = "auto";
-          el.style.bottom = "auto";
+          el.style.setProperty('left', pos.left + "px", 'important');
+          el.style.setProperty('top', pos.top + "px", 'important');
+          el.style.setProperty('right', 'auto', 'important');
+          el.style.setProperty('bottom', 'auto', 'important');
         }
       } catch (e) {}
     }
