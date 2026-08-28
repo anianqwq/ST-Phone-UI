@@ -24,6 +24,102 @@
     observer: null,
   };
 
+  // ============ 拖拽功能 ============
+  function makeDraggable(el, storageKey, options) {
+    options = options || {};
+    const handleSelector = options.handle || null;
+    let startX, startY, startLeft, startTop;
+    let isDragging = false;
+    let dragMoved = false;
+    const DRAG_THRESHOLD = 5;
+
+    function onStart(e) {
+      // 不拦截交互元素上的点击
+      if (e.target.closest(".st-phone-tab, .st-phone-close, .st-phone-content, .st-chat-bubble-wrap, .st-rednote-card, .st-contact-item, .st-phone-tabbar")) {
+        return;
+      }
+      if (handleSelector && !e.target.closest(handleSelector)) {
+        return;
+      }
+
+      const point = e.touches ? e.touches[0] : e;
+      startX = point.clientX;
+      startY = point.clientY;
+      const rect = el.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop = rect.top;
+      isDragging = true;
+      dragMoved = false;
+      el.classList.add("dragging");
+      el.style.transition = "none";
+      el.style.right = "auto";
+      el.style.bottom = "auto";
+      e.preventDefault();
+    }
+
+    function onMove(e) {
+      if (!isDragging) return;
+      const point = e.touches ? e.touches[0] : e;
+      const dx = point.clientX - startX;
+      const dy = point.clientY - startY;
+
+      if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
+        dragMoved = true;
+      }
+
+      // 限制不超出屏幕
+      const newLeft = Math.max(0, Math.min(startLeft + dx, window.innerWidth - el.offsetWidth));
+      const newTop = Math.max(0, Math.min(startTop + dy, window.innerHeight - el.offsetHeight));
+      el.style.left = newLeft + "px";
+      el.style.top = newTop + "px";
+    }
+
+    function onEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      el.classList.remove("dragging");
+      el.style.transition = "";
+
+      if (dragMoved && storageKey) {
+        const rect = el.getBoundingClientRect();
+        const pos = { left: rect.left, top: rect.top };
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(pos));
+        } catch (e) {}
+      }
+    }
+
+    // 恢复保存的位置
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const pos = JSON.parse(saved);
+          el.style.left = pos.left + "px";
+          el.style.top = pos.top + "px";
+          el.style.right = "auto";
+          el.style.bottom = "auto";
+        }
+      } catch (e) {}
+    }
+
+    // 鼠标事件
+    el.addEventListener("mousedown", onStart);
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onEnd);
+
+    // 触摸事件（手机）
+    el.addEventListener("touchstart", onStart, { passive: false });
+    document.addEventListener("touchmove", onMove, { passive: false });
+    document.addEventListener("touchend", onEnd);
+    document.addEventListener("touchcancel", onEnd);
+
+    return {
+      wasDragged: function () { return dragMoved; },
+      resetDrag: function () { dragMoved = false; },
+    };
+  }
+
   // ============ 颜色池（用于联系人头像） ============
   const AVATAR_COLORS = [
     "#ff6b6b", "#ee5a24", "#f0932b", "#f9ca24",
@@ -51,8 +147,17 @@
     const btn = document.createElement("div");
     btn.id = "st-phone-floating-btn";
     btn.innerHTML = '📱<span class="badge" style="display:none">0</span>';
-    btn.title = "打开手机";
-    btn.addEventListener("click", togglePhone);
+    btn.title = "拖动可随意移动位置 | 点击打开手机";
+
+    // 先绑拖拽，再绑点击
+    const btnDrag = makeDraggable(btn, "st-phone-btn-pos");
+    btn.addEventListener("click", function (e) {
+      if (btnDrag.wasDragged()) {
+        btnDrag.resetDrag();
+        return;
+      }
+      togglePhone();
+    });
     document.body.appendChild(btn);
 
     // 手机容器
@@ -60,6 +165,7 @@
     container.id = "st-phone-container";
     container.innerHTML = `
       <div class="st-phone-frame">
+        <div class="st-phone-drag-handle"></div>
         <div class="st-phone-screen">
           <div class="st-phone-notch"></div>
           <div class="st-phone-statusbar">
@@ -88,6 +194,9 @@
       </div>
     `;
     document.body.appendChild(container);
+
+    // 手机容器拖拽（从手柄或状态栏拖动）
+    makeDraggable(container, "st-phone-container-pos", { handle: ".st-phone-drag-handle,.st-phone-statusbar" });
 
     // 关闭按钮
     container.querySelector(".st-phone-close").addEventListener("click", () => {
