@@ -4,45 +4,35 @@
 
 /* --- 手机浮窗按钮 --- */
 #st-phone-floating-btn {
-  position: fixed !important;
-  left: calc(100vw - 80px) !important;
-  top: calc(100vh - 80px) !important;
-  right: auto !important;
-  bottom: auto !important;
-  width: 56px;
-  height: 56px;
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: #fff;
-  font-size: 26px;
-  display: flex !important;
+  font-size: 22px;
+  display: flex;  /* 默认显示 */
   align-items: center;
   justify-content: center;
   cursor: grab;
-  z-index: 2147483647 !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
-  border: 2px solid rgba(255,255,255,0.2);
+  z-index: 99999;  /* 提高到最高层级 */
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  border: 1.5px solid rgba(255,255,255,0.15);
   transition: transform 0.2s, box-shadow 0.2s;
   user-select: none;
-  margin: 0 !important;
-  padding: 0 !important;
+  -webkit-user-select: none;
+  touch-action: none;  /* 禁止浏览器默认触摸行为 */
+  /* 增加呼吸动画 */
   animation: st-phone-pulse 2s ease-in-out infinite;
-  pointer-events: auto !important;
-  touch-action: none;
+}
+#st-phone-floating-btn:active {
+  cursor: grabbing;
 }
 #st-phone-floating-btn:hover {
   transform: scale(1.08);
   box-shadow: 0 6px 24px rgba(0,0,0,0.4);
-}
-#st-phone-floating-btn.dragging {
-  cursor: grabbing !important;
-  animation: none !important;
-  transition: none !important;
-  transform: none !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.3) !important;
-}
-#st-phone-floating-btn.dragging:hover {
-  transform: none !important;
 }
 #st-phone-floating-btn .badge {
   position: absolute;
@@ -65,21 +55,14 @@
 /* --- 手机主容器 --- */
 #st-phone-container {
   position: fixed;
-  left: calc(100vw - 370px);
-  top: calc(100vh - 760px);
-  right: auto;
-  bottom: auto;
-  z-index: 2147483646;
+  bottom: 140px;
+  right: 30px;
+  z-index: 9999;
   display: none;
-  touch-action: none;
+  animation: st-phone-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 #st-phone-container.show {
   display: block;
-  animation: st-phone-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-#st-phone-container.dragging {
-  animation: none !important;
-  transition: none !important;
 }
 @keyframes st-phone-slide-up {
   from { opacity: 0; transform: translateY(30px) scale(0.9); }
@@ -126,20 +109,6 @@
   z-index: 10;
 }
 
-/* --- 手机拖拽手柄 --- */
-.st-phone-drag-handle {
-  width: 40px;
-  height: 5px;
-  background: rgba(0,0,0,0.2);
-  border-radius: 3px;
-  margin: 8px auto 0;
-  cursor: grab;
-  flex-shrink: 0;
-}
-#st-phone-container.dragging .st-phone-drag-handle {
-  cursor: grabbing;
-}
-
 /* --- 状态栏 --- */
 .st-phone-statusbar {
   height: 36px;
@@ -171,9 +140,8 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px 14px 16px;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  padding: 10px 14px;
+  scroll-behavior: smooth;
 }
 .st-phone-content::-webkit-scrollbar { width: 3px; }
 .st-phone-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
@@ -486,6 +454,10 @@
    ============================================================ */
 
 @media (max-width: 480px) {
+  #st-phone-container {
+    right: 10px;
+    bottom: 100px;
+  }
   .st-phone-frame {
     width: 300px;
     height: 520px;
