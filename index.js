@@ -669,7 +669,7 @@
     });
   }
 
-  // ============ 浮动按钮拖拽（使用 Pointer Events + setPointerCapture） ============
+  // ============ 浮动按钮拖拽（双重保障：Pointer Events + Mouse/Touch Fallback） ============
   function setupFloatingBtnDrag() {
     const btn = document.getElementById("st-phone-floating-btn");
     if (!btn) {
@@ -677,52 +677,52 @@
       return;
     }
 
-    let startX, startY, startRight, startBottom;
+    // 状态变量
+    let isDragging = false;
+    let startX, startY;
+    let startRight, startBottom;
     let hasMoved = false;
+    let justDragged = false;
     let pointerId = null;
 
-    function onPointerDown(e) {
-      // 只处理主指针（鼠标左键 / 单指触摸）
-      if (e.button !== undefined && e.button !== 0) return;
-
-      pointerId = e.pointerId;
+    // ---------- 核心拖拽逻辑（三种输入统一处理） ----------
+    function dragStart(clientX, clientY, id) {
+      isDragging = true;
       hasMoved = false;
+      justDragged = false;
+      pointerId = id;
 
-      startX = e.clientX;
-      startY = e.clientY;
+      startX = clientX;
+      startY = clientY;
 
       const rect = btn.getBoundingClientRect();
       startRight = window.innerWidth - rect.right;
       startBottom = window.innerHeight - rect.bottom;
 
-      // 捕获指针：后续所有 pointermove/pointerup 都路由到 btn，不会丢失
-      btn.setPointerCapture(e.pointerId);
-
-      // 拖拽时暂停动画和过渡
       btn.style.animation = "none";
       btn.style.transition = "none";
       btn.style.cursor = "grabbing";
 
-      console.log("[ST-Phone-UI] 拖拽开始", { startRight, startBottom });
+      console.log("[ST-Phone-UI] 拖拽开始", { startRight, startBottom, x: clientX, y: clientY });
     }
 
-    function onPointerMove(e) {
-      if (e.pointerId !== pointerId) return;
+    function dragMove(clientX, clientY) {
+      if (!isDragging) return;
 
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
+      const deltaX = clientX - startX;
+      const deltaY = clientY - startY;
 
-      if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      // 超过阈值才算真正开始拖拽
+      if (!hasMoved && (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3)) {
         hasMoved = true;
+        console.log("[ST-Phone-UI] 进入拖拽移动状态");
       }
 
       if (!hasMoved) return;
 
-      // 计算新位置（右下角定位）
       let newRight = startRight - deltaX;
       let newBottom = startBottom - deltaY;
 
-      // 边界限制
       newRight = Math.max(8, Math.min(window.innerWidth - btn.offsetWidth - 8, newRight));
       newBottom = Math.max(8, Math.min(window.innerHeight - btn.offsetHeight - 8, newBottom));
 
@@ -732,18 +732,17 @@
       btn.style.top = "auto";
     }
 
-    function onPointerUp(e) {
-      if (e.pointerId !== pointerId) return;
-
+    function dragEnd() {
+      if (!isDragging) return;
+      isDragging = false;
       pointerId = null;
 
-      // 恢复样式
       btn.style.cursor = "";
       btn.style.animation = "";
       btn.style.transition = "";
 
       if (hasMoved) {
-        // 保存位置到 localStorage
+        justDragged = true; // 标记：刚完成拖拽，需要阻止下一次 click
         try {
           localStorage.setItem("st-phone-btn-right", btn.style.right);
           localStorage.setItem("st-phone-btn-bottom", btn.style.bottom);
@@ -751,29 +750,105 @@
             right: btn.style.right,
             bottom: btn.style.bottom,
           });
-        } catch (err) {
-          // localStorage 不可用
-        }
+        } catch (err) {}
+      } else {
+        console.log("[ST-Phone-UI] 未移动，视为普通点击");
       }
-      // hasMoved 为 false 时是普通点击，由 click 事件处理 togglePhone
+
+      // 重置移动标志（供下次使用）
+      hasMoved = false;
     }
 
-    // Pointer Events 统一处理鼠标和触摸
+    // ---------- Pointer Events（现代浏览器首选） ----------
+    function onPointerDown(e) {
+      // 接受：鼠标左键(0) / 触摸(-1)
+      if (e.button !== undefined && e.button > 0) {
+        console.log("[ST-Phone-UI] 忽略非主键 pointerdown, button=", e.button);
+        return;
+      }
+      try {
+        btn.setPointerCapture(e.pointerId);
+      } catch (err) {
+        console.warn("[ST-Phone-UI] setPointerCapture 失败，将使用降级方案", err);
+      }
+      dragStart(e.clientX, e.clientY, e.pointerId);
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging || e.pointerId !== pointerId) return;
+      dragMove(e.clientX, e.clientY);
+    }
+
+    function onPointerUp(e) {
+      if (!isDragging || e.pointerId !== pointerId) return;
+      dragEnd();
+    }
+
     btn.addEventListener("pointerdown", onPointerDown);
     btn.addEventListener("pointermove", onPointerMove);
     btn.addEventListener("pointerup", onPointerUp);
     btn.addEventListener("pointercancel", onPointerUp);
     btn.addEventListener("lostpointercapture", onPointerUp);
 
-    // 在捕获阶段拦截拖拽后的 click，防止误触发 togglePhone
+    // ---------- Mouse Events 降级（老浏览器 / Pointer Events 被干扰时） ----------
+    function onMouseDown(e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      dragStart(e.clientX, e.clientY, "mouse");
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    }
+
+    function onMouseMove(e) {
+      dragMove(e.clientX, e.clientY);
+    }
+
+    function onMouseUp(e) {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      dragEnd();
+    }
+
+    btn.addEventListener("mousedown", onMouseDown);
+
+    // ---------- Touch Events 降级（移动端 / 触摸设备） ----------
+    function onTouchStart(e) {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      dragStart(t.clientX, t.clientY, "touch");
+
+      document.addEventListener("touchmove", onTouchMove, { passive: false });
+      document.addEventListener("touchend", onTouchEnd);
+      document.addEventListener("touchcancel", onTouchEnd);
+    }
+
+    function onTouchMove(e) {
+      e.preventDefault();
+      const t = e.touches[0];
+      dragMove(t.clientX, t.clientY);
+    }
+
+    function onTouchEnd(e) {
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend", onTouchEnd);
+      document.removeEventListener("touchcancel", onTouchEnd);
+      dragEnd();
+    }
+
+    btn.addEventListener("touchstart", onTouchStart, { passive: false });
+
+    // ---------- 阻止拖拽后的 click 误触发 togglePhone ----------
     btn.addEventListener("click", function (e) {
-      if (hasMoved) {
-        e.stopPropagation();
+      if (justDragged) {
+        e.stopImmediatePropagation();
         e.preventDefault();
+        justDragged = false;
+        console.log("[ST-Phone-UI] 阻止拖拽后的误点击");
       }
     }, true);
 
-    console.log("[ST-Phone-UI] 拖拽功能已就绪（Pointer Events + setPointerCapture）");
+    console.log("[ST-Phone-UI] 拖拽功能已就绪（Pointer + Mouse + Touch 三重保障）");
   }
 
   function restoreFloatingBtnPosition() {
